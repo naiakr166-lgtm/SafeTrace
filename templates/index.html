@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SafeTrace | أثر الأمان</title>
+    <style>
+        body {
+            background: #0B1020;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        h1 { color: #A78BFA; }
+        .card {
+            background: #1E293B;
+            border-radius: 18px;
+            padding: 30px;
+            max-width: 520px;
+            margin: 25px auto;
+        }
+        input, button {
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            border-radius: 10px;
+            border: none;
+            font-size: 16px;
+        }
+        button {
+            background: #A78BFA;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        input { background: white; }
+        .message {
+            color: #C4B5FD;
+            margin: 15px;
+        }
+        .device {
+            background: #334155;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>أثر الأمان | SafeTrace</h1>
+    <p>نظام تتبع سلامة الأجهزة الطبية باستخدام البلوك تشين</p>
+
+    <div class="card">
+        <h2>تسجيل جهاز طبي جديد</h2>
+
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <p class="message">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        <form action="{{ url_for('register') }}" method="POST">
+            <input name="device_id"
+                   placeholder="رقم الجهاز: WC-209"
+                   required>
+            <input name="device_type"
+                   placeholder="نوع الجهاز: Wheelchair"
+                   required>
+            <button type="submit">تسجيل الجهاز</button>
+        </form>
+    </div>
+
+<div class="card">
+    <h2>الإبلاغ عن عطل</h2>
+    <p>عند تسجيل عطل، يتم تصنيف الجهاز بأنه غير آمن.</p>
+
+    <form action="{{ url_for('damage') }}" method="POST">
+        <input name="device_id"
+               placeholder="رقم الجهاز: WC-209"
+               required>
+
+        <input name="issue"
+               placeholder="وصف العطل: Broken brakes"
+               required>
+
+        <button type="submit">
+            الإبلاغ عن العطل
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>إعارة جهاز طبي</h2>
+    <p>يمنع النظام إعارة الأجهزة المصنفة بأنها غير آمنة.</p>
+
+    <form action="{{ url_for('lend') }}" method="POST">
+        <input name="device_id"
+               placeholder="رقم الجهاز: WC-209"
+               required>
+
+        <input name="center"
+               placeholder="الجهة المستفيدة: Rehabilitation Center"
+               required>
+
+        <button type="submit">
+            طلب إعارة الجهاز
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>اعتماد إصلاح الجهاز</h2>
+    <p>لا يمكن اعتماد الإصلاح إلا من فني مصرح له.</p>
+
+    <form action="{{ url_for('repair') }}" method="POST">
+        <input name="device_id"
+               placeholder="رقم الجهاز: WC-209"
+               required>
+
+        <input name="technician_id"
+               placeholder="رقم الفني: TECH-01"
+               required>
+
+        <button type="submit">
+            اعتماد الإصلاح
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>جواز الأمان الرقمي</h2>
+    <p>استعرض تاريخ الجهاز الطبي المسجل في البلوك تشين.</p>
+
+    <form action="{{ url_for('history') }}" method="POST">
+        <input name="device_id"
+               placeholder="رقم الجهاز: WC-209"
+               required>
+        <button type="submit">عرض سجل الجهاز</button>
+    </form>
+
+    {% if selected_device is defined %}
+        <h3>سجل الجهاز: {{ selected_device }}</h3>
+
+        {% if device_history %}
+            {% for block in device_history %}
+                <div class="device">
+                    <p><strong>العملية:</strong> {{ block.action }}</p>
+                    <p><strong>التفاصيل:</strong> {{ block.details }}</p>
+                    <p><strong>التاريخ:</strong> {{ block.timestamp }}</p>
+                    <p><strong>رقم الكتلة:</strong> {{ block.index }}</p>
+                    <p style="overflow-wrap:anywhere; font-size:12px;">
+                        <strong>Hash:</strong> {{ block.hash }}
+                    </p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>لا توجد عمليات مسجلة لهذا الجهاز.</p>
+        {% endif %}
+    {% endif %}
+</div>
+
+    <div class="card">
+        <h2>الأجهزة المسجلة</h2>
+        {% for id, device in devices.items() %}
+            <div class="device">
+                <strong>{{ id }}</strong>
+                <p>النوع: {{ device["type"] }}</p>
+                <p>الحالة: {{ device["status"] }}</p>
+            </div>
+        {% else %}
+            <p>لا توجد أجهزة مسجلة حتى الآن.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
